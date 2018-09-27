@@ -1,0 +1,13 @@
+Training Accuracy: 0.9978222222222223
+Testing Accuracy: 0.9201
+Adversarial Success Rate: 1.0
+Mean l1 distortion: 4.121944761560769
+Max l1 distortion: 24.011490504723042
+Mean l2 distortion: 0.10741458381622988
+Max l2 distortion: 0.6514181796968825
+Mean l_inf distortion: 0.012847464243483006
+Max l_inf distortion: 0.0760815292596817
+Defense Analysis on first 1000 testing images
+Defense FPR:  0.235
+Defense Error Rate:  0.243
+Undefended Error Rate:  0.08
