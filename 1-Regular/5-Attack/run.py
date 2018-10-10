@@ -53,7 +53,7 @@ def run(args, restrict = True):
     tf.set_random_seed(1) #Having this before keras.clear_session() causes it it hang for some reason
 
     # Load Model/Data and setup SPSA placeholders
-    N = 200
+    N = 1000
     if dataset == "MNIST":
         # Base Model
         base_model = MNISTModel("../1-Models/MNIST")
