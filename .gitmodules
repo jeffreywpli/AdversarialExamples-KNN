@@ -1,0 +1,6 @@
+[submodule "Code/cleverhans"]
+	path = Code/cleverhans
+	url = https://github.com/jeffreywpli/cleverhans.git
+[submodule "Code/nn_breaking_detection"]
+	path = Code/nn_breaking_detection
+	url = https://github.com/jeffreywpli/nn_breaking_detection.git

@@ -13,8 +13,7 @@ from setup_mnist import MNISTModel, MNIST
 
 # Load Parameters
 dataset = sys.argv[1]
-layer_name = sys.argv[2]
-mode = sys.argv[3]
+mode = sys.argv[2]
 
 # Configure Keras/Tensorflow
 config = tf.ConfigProto()
@@ -33,7 +32,7 @@ elif dataset == "CIFAR":
     model = CIFARModel("../1-Models/CIFAR").model
 
 #print(model.summary()) #used to find what 'layer_name' should be
-representation_layer = KModel(inputs = model.input, outputs=model.get_layer(layer_name).output)
+representation_layer = KModel(inputs = model.input, outputs=model.output)
 
 # Compute Representation
 np.save(dataset + "/train_" + mode, representation_layer.predict(data.train_data))

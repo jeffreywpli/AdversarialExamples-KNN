@@ -28,31 +28,30 @@ def run(args, restrict = True):
         # Restrict the visible GPUs to the one for this subprocess
         id = np.int(multiprocessing.current_process().name.split("-")[1])
         os.environ["CUDA_VISIBLE_DEVICES"]= str(id - 1)
-    
+
     # Load Parameters
     dataset = args[0]
     epsilon = float(args[1])
-    layer_name = args[2]
-    mode = args[3]
-    K = int(args[4])
-    bias = float(args[5])
+    mode = args[2]
+    K = int(args[3])
+    bias = float(args[4])
 
     fname = dataset + "/" + str(epsilon) + "_" + mode + "_" + str(K) + "_" + str(bias)
-    
+
     # Configure Keras/Tensorflow
     Keras.clear_session()
-    
+
     config = tf.ConfigProto()
     config.gpu_options.allow_growth=True
     set_session(tf.Session(config=config))
 
     sess = Keras.get_session()
     Keras.set_learning_phase(False)
-    
+
     # Fix Random Seeds
     np.random.seed(1)
     tf.set_random_seed(1) #Having this before keras.clear_session() causes it it hang for some reason
-    
+
     # Load Model/Data and setup SPSA placeholders
     N = 200
     if dataset == "MNIST":
@@ -82,9 +81,9 @@ def run(args, restrict = True):
     x_train = np.float32(np.vstack((x_train_real, x_train_adv)))
     #print("Bounds ", np.max(np.abs(x_train)))
     y_train = np.float32(np.hstack((-1.0 * np.ones(n_train), np.ones(n_train_adv))))
-    
+
     # Create the defended model
-    model_defended = DefendedModel(base_model, layer_name, x_train, y_train, K, bias = bias)
+    model_defended = DefendedModel(base_model, x_train, y_train, K, bias = bias)
     defended_logits = model_defended.get_logits(x)
 
     # Get the predictions on the original images
@@ -98,7 +97,7 @@ def run(args, restrict = True):
     with tf.name_scope("Attack") as scope:
         gen = attack.generate(x_spsa, y_target = y_spsa, epsilon = epsilon, is_targeted = True,
                                 num_steps = 100, batch_size = 2048, early_stop_loss_threshold = -5.0)
-    
+
     # Run the attack
     pred_adv = -1.0 * np.ones((N, 10))
     for i in range(N):
@@ -112,9 +111,9 @@ def run(args, restrict = True):
             file = open(fname, "wb")
             pickle.dump(out, file)
             file.close()
-        
+
         x_real = data.test_data[i].reshape(shape_spsa)
-        
+
         # Try a targeted attack for each class other than the original network prediction and the adversarial class
         for y in range(10):
             if y != pred_undefended[i]:
@@ -133,6 +132,6 @@ def run(args, restrict = True):
     analysis(fname)
 
 if __name__ == "__main__":
-    args = [[sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]]]
+    args = [[sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]]
     run(args[0], restrict = False)
 
