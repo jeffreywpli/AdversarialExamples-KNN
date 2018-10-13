@@ -132,6 +132,6 @@ def run(args, restrict = True):
     analysis(fname)
 
 if __name__ == "__main__":
-    args = [[sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]]
+    args = [[sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]]]
     run(args[0], restrict = False)
 

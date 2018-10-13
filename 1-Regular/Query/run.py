@@ -16,10 +16,9 @@ sys.path.insert(0, "../../Code/")
 from defense import DefendedModel
 
 dataset = sys.argv[1]
-layer_name = sys.argv[2]
-mode = sys.argv[3]
-K = int(sys.argv[4])
-bias = float(sys.argv[5])
+mode = sys.argv[2]
+K = int(sys.argv[3])
+bias = float(sys.argv[4])
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth=True
@@ -75,7 +74,7 @@ n_train_adv = x_train_adv.shape[0]
 x_train = np.float32(np.vstack((x_train_real, x_train_adv)))
 y_train = np.float32(np.hstack((-1.0 * np.ones(n_train), np.ones(n_train_adv))))
 
-model_defended = DefendedModel(model, layer_name, x_train, y_train, K, bias = bias)
+model_defended = DefendedModel(model, x_train, y_train, K, bias = bias)
 defended_logits = model_defended.get_logits(x)
 
 logits_real = sess.run(defended_logits, {x: data.test_data[:1000]})
