@@ -26,7 +26,7 @@ class KNN(Model):
             return tf.pad(tf.expand_dims(votes, 1), paddings)
 
 class DefendedModel(Model):
- 
+
     '''
     Params:
     model -  either a MNISTModel or CIFARModel object
@@ -36,21 +36,32 @@ class DefendedModel(Model):
     '''
     def __init__(self, model = None, X = None, Y = None, K = 1):
         super(DefendedModel, self).__init__()
-        
+
         self.knn = KNN(model, X, Y, K)
         self.num_classes = 2 # TODO: 10
         self.model = model.model
-    
+
     #TODO: get_votes
-    def get_logits(self, x):
+    def get_votes(self, x): #may not be necessry
         with tf.name_scope("Votes") as scope:
             votes = self.knn.get_logits(x)
             return votes
             #return tf.squeeze(tf.slice(votes, [0, 0], [-1, 1]))
-    
+
     # TODO: get_logits
     # TODO:  if K-NN says input is Adversarial, project to a nearby input that K-NN says is real and use that output
-    def get_logits_real(self, x):
+    def get_logits(self, x):
         with tf.name_scope("DefendedLogits") as scope:
             logits = self.model(x)
-            return logits
+            votes = self.knn.get_logits(x)
+
+            if votes[0,0] > 0:
+                attempts = x + tf.random_normal(x.shape[1:], stddev=0.022)
+                attempts_logits = self.model(attempts)
+                attempts_votes = self.knn.get_logits(attempts)
+                logit_adv = tf.sign(attempts_votes) * 2 * tf.reduce_max(tf.abs(attempts_logits), reduction_indices = [1])
+                new_logits = tf.concat([logits_model, tf.expand_dims(logit_adv, 1)], axis = 1)
+                return new_logits
+            else:
+                return logits
+

@@ -67,13 +67,13 @@ indices_adv = np.where(y == 1)[0]
 # Run K-NN
 file = open(fname + ".txt", "w")
 for k in [1,3,5,11,21,51,71]:
-    
+
     votes = sess.run(defense, {X_test: x, X: x_train, Y: y_train, K: k})
-    
+
     acc = np.mean(np.sign(votes) == y)
     fpr = np.mean(np.sign(votes[indices_real]) == 1)
     tpr = np.mean(np.sign(votes[indices_adv]) == 1)
-    
+
     file.write(str(k) + "-NN" + "\n")
     file.write("Accuracy: " + str(acc) + "\n")
     file.write("FPR: " + str(fpr) + "\n")

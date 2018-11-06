@@ -12,12 +12,12 @@ def pairwise_dist(A, B):
   Returns:
     D,    [m,n] matrix of pairwise distances
   """
-  
+
   with tf.name_scope("PairwiseDist") as scope:
     # squared norms of each row in A and B
     na = tf.reduce_sum(tf.square(A), 1)
     nb = tf.reduce_sum(tf.square(B), 1)
-    
+
     # na as a row and nb as a co"lumn vectors
     na = tf.reshape(na, [-1, 1])
     nb = tf.reshape(nb, [1, -1])

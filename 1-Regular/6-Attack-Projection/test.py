@@ -27,7 +27,7 @@ def run(args, restrict = True):
         # Restrict the visible GPUs to the one for this subprocess
         id = np.int(multiprocessing.current_process().name.split("-")[1])
         os.environ["CUDA_VISIBLE_DEVICES"]= str(id - 1)
-    
+
     # Load Parameters
     dataset = args[0]
     epsilon = float(args[1])
@@ -35,21 +35,21 @@ def run(args, restrict = True):
     K = int(args[3])
 
     fname = dataset + "/" + str(epsilon) + "_" + mode + "_" + str(K)
-    
+
     # Configure Keras/Tensorflow
     Keras.clear_session()
-    
+
     config = tf.ConfigProto()
     config.gpu_options.allow_growth=True
     set_session(tf.Session(config=config))
 
     sess = Keras.get_session()
     Keras.set_learning_phase(False)
-    
+
     # Fix Random Seeds
     np.random.seed(1)
     tf.set_random_seed(1) #Having this before keras.clear_session() causes it it hang for some reason
-    
+
     # Load Model/Data and setup SPSA placeholders
     N = 500
     if dataset == "MNIST":
@@ -78,11 +78,11 @@ def run(args, restrict = True):
     n_train_adv = x_train_adv.shape[0]
     x_train = np.float32(np.vstack((x_train_real, x_train_adv)))
     y_train = np.float32(np.hstack((-1.0 * np.ones(n_train), np.ones(n_train_adv))))
-    
+
     # Create the defended model
     defense = DefendedModel(base_model, x_train, y_train, K)
-    get_votes = defense.get_logits(x)
-    get_logits = defense.get_logits_real(x)
+    get_votes = defense.get_votes(x)                   # Should this be get_votes, introducing separate method
+    get_logits = defense.get_logits(x)
 
     # Configure the attack
     attack = SPSA(defense, back = "tf", sess = sess)
@@ -103,16 +103,19 @@ def run(args, restrict = True):
     for i in range(N):
         if votes[i,0] > 0:
             count += 1
-            # Project via an adversarially attack on the votes
-            x_real = x_sample[i].reshape(shape_spsa)
-            x_adv = sess.run(gen, {x_spsa: x_real, y_spsa: 0}) #TODO: not adv, is projected
-            
+            # Project via an adversarially attack on the votest
+            #x_real = x_sample[i].reshape(shape_spsa)
+            #x_adv = sess.run(gen, {x_spsa: x_real, y_spsa: 0}) #TODO: not adv, is projected
+            x_proj = sess.run(get_logits, {x: x_sample[i]})
+            projection_labels = np.argmax(x_proj, axis = 1)
+            successful_projections = projection_labels[np.nonzero(projection_labels * (projection_labels != 10))]
+
             # Check if the projection was a success
-            if sess.run(get_votes, {x: x_adv})[0,0] < 0:
+            if successful_projections.shape[0] != 0:
                 bound += 1
-            
+
             # Check if the projection is predicted correctly
-            if y_sample[i] == np.argmax(sess.run(get_logits, {x: x_adv}), axis = 1)[0]:
+            if y_sample[i] == np.argmax(sess.run(get_logits, {x: x_proj}), axis = 1)[0]:
                 correct += 1
 
     print("FP Count: ", count)
